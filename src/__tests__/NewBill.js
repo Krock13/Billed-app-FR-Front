@@ -262,9 +262,6 @@ describe('Given I am connected as an employee', () => {
       await new Promise(process.nextTick);
       expect(console.error).toBeCalled();
       expect(console.error).toBeCalledWith(expect.objectContaining({ message: 'Erreur 500' }));
-
-      console.error.mockRestore();
-      mockStore.bills.mockRestore();
     });
   });
 });
