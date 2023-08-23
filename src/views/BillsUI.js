@@ -1,8 +1,8 @@
-import VerticalLayout from "./VerticalLayout.js";
-import ErrorPage from "./ErrorPage.js";
-import LoadingPage from "./LoadingPage.js";
+import VerticalLayout from './VerticalLayout.js';
+import ErrorPage from './ErrorPage.js';
+import LoadingPage from './LoadingPage.js';
 
-import Actions from "./Actions.js";
+import Actions from './Actions.js';
 
 const row = (bill) => {
   return `
@@ -19,12 +19,35 @@ const row = (bill) => {
     `;
 };
 
+const french_date_to_standard = (dateStr) => {
+  const months = {
+    'Jan.': '01',
+    'Fév.': '02',
+    'Mar.': '03',
+    'Avr.': '04',
+    'Mai.': '05',
+    'Jui.': '06',
+    'Jui.': '07',
+    'Aoû.': '08',
+    'Sep.': '09',
+    'Oct.': '10',
+    'Nov.': '11',
+    'Déc.': '12',
+  };
+  const [day, month, year] = dateStr.split(' ');
+  return `20${year}-${months[month]}-${day.padStart(2, '0')}`;
+};
+
 const rows = (data) => {
   if (data && data.length) {
-    const sortedData = data.sort((a, b) => new Date(b.date) - new Date(a.date));
-    return sortedData.map((bill) => row(bill)).join("");
+    const sortedData = data.sort((a, b) => {
+      const dateA = new Date(french_date_to_standard(a.date));
+      const dateB = new Date(french_date_to_standard(b.date));
+      return dateB - dateA;
+    });
+    return sortedData.map((bill) => row(bill)).join('');
   } else {
-    return "";
+    return '';
   }
 };
 

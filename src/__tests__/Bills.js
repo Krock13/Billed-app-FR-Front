@@ -16,7 +16,8 @@ jest.mock('../app/store', () => mockStore);
 
 describe('Given I am connected as an employee', () => {
   describe('When I am on Bills Page', () => {
-    test('Then bill icon in vertical layout should be highlighted', async () => {
+    beforeEach(() => {
+      // Mock du localStorage
       Object.defineProperty(window, 'localStorage', {
         value: localStorageMock,
       });
@@ -26,24 +27,37 @@ describe('Given I am connected as an employee', () => {
           type: 'Employee',
         })
       );
+
+      // Initialisation du DOM pour le test
       const root = document.createElement('div');
       root.setAttribute('id', 'root');
       document.body.append(root);
+
+      // Initialisation du routeur
       router();
       window.onNavigate(ROUTES_PATH.Bills);
+    });
+
+    // Nettoyage après chaque test pour éviter les effets secondaires
+    afterEach(() => {
+      document.body.innerHTML = '';
+    });
+    test('Then bill icon in vertical layout should be highlighted', async () => {
       await waitFor(() => screen.getByTestId('icon-window'));
       const windowIcon = screen.getByTestId('icon-window');
       //to-do write expect expression
       expect(windowIcon.classList.contains('active-icon')).toBe(true);
     });
-    test('Then bills should be ordered from earliest to latest', () => {
-      document.body.innerHTML = BillsUI({ data: bills });
-      const dates = screen
-        .getAllByText(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i)
-        .map((a) => a.innerHTML);
-      const antiChrono = (a, b) => (a < b ? 1 : -1);
-      const datesSorted = [...dates].sort(antiChrono);
-      expect(dates).toEqual(datesSorted);
+    test('Then bills should be ordered from earliest to latest', async () => {
+      await waitFor(() => screen.getByText('Transports'));
+
+      const expectedOrder = ['4 Avr. 04', '3 Mar. 03', '2 Fév. 02', '1 Jan. 01'];
+      const dateRegex =
+        /(\d{1,2}\s(?:Jan\.|Fév\.|Mar\.|Avr\.|Mai\.|Jui\.|Juil\.|Aoû\.|Sep\.|Oct\.|Nov\.|Déc\.)\s\d{2})/i;
+      const actualOrder = screen
+        .getAllByText(dateRegex)
+        .map((dateElement) => dateElement.innerHTML);
+      expect(actualOrder).toEqual(expectedOrder);
     });
   });
   describe('When I navigate to Bills', () => {
@@ -110,6 +124,7 @@ describe('Given I am connected as an employee', () => {
 describe('Given I am connected as Employee and I am on Bills page', () => {
   describe('When I click on the icon eye', () => {
     test('A modal should open', () => {
+      document.body.innerHTML = BillsUI({ data: bills });
       Object.defineProperty(window, 'localStorage', {
         value: localStorageMock,
       });
